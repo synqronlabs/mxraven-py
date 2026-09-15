@@ -7,6 +7,10 @@ The reference is generated from the source with
 
 ::: mxraven
 
+## Asynchronous client
+
+::: mxraven.aio
+
 ## Webhooks
 
 ::: mxraven.webhook

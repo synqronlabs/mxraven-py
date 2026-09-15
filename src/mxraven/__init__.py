@@ -11,7 +11,43 @@ from __future__ import annotations
 
 from importlib.metadata import PackageNotFoundError, version
 
-__all__ = ["__version__"]
+from mxraven.client import DEFAULT_ADDRESS_PORT, Client
+from mxraven.errors import (
+    FeedbackError,
+    InvalidSignatureError,
+    MxRavenError,
+    SMTPCapabilityError,
+    SMTPConnectionError,
+    SMTPError,
+    SMTPProtocolError,
+    SMTPTimeoutError,
+    SMTPTransactionError,
+    WebhookError,
+)
+from mxraven.message import Attachment, Envelope, Header, Message
+from mxraven.result import RecipientResult, Result
+
+__all__ = [
+    "DEFAULT_ADDRESS_PORT",
+    "Attachment",
+    "Client",
+    "Envelope",
+    "FeedbackError",
+    "Header",
+    "InvalidSignatureError",
+    "Message",
+    "MxRavenError",
+    "RecipientResult",
+    "Result",
+    "SMTPCapabilityError",
+    "SMTPConnectionError",
+    "SMTPError",
+    "SMTPProtocolError",
+    "SMTPTimeoutError",
+    "SMTPTransactionError",
+    "WebhookError",
+    "__version__",
+]
 
 try:
     __version__ = version("mxraven")

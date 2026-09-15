@@ -128,12 +128,18 @@ known-first-party = ["mxraven"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = [
-    "ANN",   # test fixtures and helpers need not be fully annotated
-    "ARG",   # fixtures are requested by name
-    "D",     # tests are named, not documented
-    "S101",  # assert is the pytest idiom
-    "SLF001",# tests may inspect private members
-    "PLR2004", # literal expectations are clearer than constants
+    "ANN",    # test fixtures and helpers need not be fully annotated
+    "ARG",    # fixtures are requested by name
+    "D",      # tests are named, not documented
+    "FBT",    # boolean parametrize columns are the pytest idiom
+    "PLR0912",# test servers and helpers may branch a lot
+    "PLR0915",# test servers and helpers may be long
+    "S101",   # assert is the pytest idiom
+    "S105",   # test credentials are not real secrets
+    "S106",   # test credentials are not real secrets
+    "S107",   # test credentials are not real secrets
+    "SLF001", # tests may inspect private members
+    "PLR2004",# literal expectations are clearer than constants
 ]
 
 [tool.mypy]
