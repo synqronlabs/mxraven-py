@@ -15,6 +15,11 @@ concurrency:
 jobs:
   publish:
     name: Publish to PyPI
+    # Publishing is deferred until the repository variable
+    # PYPI_PUBLISH_ENABLED is set to "true" (Settings -> Secrets and variables
+    # -> Actions -> Variables). Until then a tag push builds and validates the
+    # distributions but never publishes to PyPI.
+    if: vars.PYPI_PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment:
       name: pypi
