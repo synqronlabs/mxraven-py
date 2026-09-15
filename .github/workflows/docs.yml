@@ -15,6 +15,10 @@ concurrency:
 jobs:
   deploy:
     name: Deploy documentation
+    # Deployment is deferred until the repository variable PAGES_ENABLED is set
+    # to "true", after enabling Pages (Settings -> Pages -> Source: GitHub
+    # Actions). Until then the workflow is skipped rather than failing.
+    if: vars.PAGES_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -40,8 +44,6 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
