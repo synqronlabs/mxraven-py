@@ -1,0 +1,216 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mxraven"
+dynamic = ["version"]
+description = "Python SDK for the mxRaven mail runtime: SMTP submission, webhook verification, and recipient feedback."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.11"
+authors = [{ name = "SynqronLabs Private Limited" }]
+keywords = ["email", "feedback", "mail", "mxraven", "sdk", "smtp", "webhook"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Email",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/synqronlabs/mxraven-py"
+Repository = "https://github.com/synqronlabs/mxraven-py"
+Issues = "https://github.com/synqronlabs/mxraven-py/issues"
+Changelog = "https://github.com/synqronlabs/mxraven-py/blob/main/CHANGELOG.md"
+Documentation = "https://synqronlabs.github.io/mxraven-py/"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+fallback_version = "0.1.0"
+local_scheme = "no-local-version"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mxraven"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/NOTICE",
+    "/README.md",
+    "/mkdocs.yml",
+    "/pyproject.toml",
+]
+
+[dependency-groups]
+dev = [
+    "check-wheel-contents>=0.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+    "mypy>=1.11",
+    "pre-commit>=3.7",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.8",
+    "towncrier>=23.11",
+    "trustme>=1.2",
+    "twine>=5.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["tmp"]
+
+[tool.ruff.lint]
+select = [
+    "A",    # flake8-builtins
+    "ANN",  # flake8-annotations
+    "ARG",  # flake8-unused-arguments
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "D",    # pydocstyle
+    "DTZ",  # flake8-datetimez
+    "E",    # pycodestyle errors
+    "EM",   # flake8-errmsg
+    "F",    # pyflakes
+    "FA",   # flake8-future-annotations
+    "FBT",  # flake8-boolean-trap
+    "FLY",  # flynt
+    "G",    # flake8-logging-format
+    "I",    # isort
+    "ICN",  # flake8-import-conventions
+    "LOG",  # flake8-logging
+    "N",    # pep8-naming
+    "PTH",  # flake8-use-pathlib
+    "PL",   # pylint
+    "PYI",  # flake8-pyi
+    "RET",  # flake8-return
+    "RUF",  # ruff-specific
+    "S",    # flake8-bandit
+    "SIM",  # flake8-simplify
+    "SLOT", # flake8-slots
+    "T20",  # flake8-print
+    "TC",   # flake8-type-checking
+    "TID",  # flake8-tidy-imports
+    "TRY",  # tryceratops
+    "UP",   # pyupgrade
+    "W",    # pycodestyle warnings
+]
+ignore = [
+    "D203",    # conflicts with D211 (no blank line before class docstring)
+    "D213",    # conflicts with D212 (multi-line summary first line)
+    "TRY003",  # long messages are fine outside exception classes
+    "PLR0913", # keyword-only APIs may legitimately take many arguments
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["mxraven"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "ANN",   # test fixtures and helpers need not be fully annotated
+    "ARG",   # fixtures are requested by name
+    "D",     # tests are named, not documented
+    "S101",  # assert is the pytest idiom
+    "SLF001",# tests may inspect private members
+    "PLR2004", # literal expectations are clearer than constants
+]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+files = ["src", "tests"]
+strict = true
+warn_unreachable = true
+warn_unused_configs = true
+disallow_any_unimported = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+    "unused-awaitable",
+]
+pretty = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+]
+filterwarnings = ["error"]
+log_cli_level = "INFO"
+
+[tool.coverage.run]
+branch = true
+source = ["mxraven"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+]
+
+[tool.towncrier]
+package = "mxraven"
+package_dir = "src"
+filename = "CHANGELOG.md"
+directory = "changelog.d"
+title_format = "## {version} - {project_date}"
+issue_format = "[#{issue}](https://github.com/synqronlabs/mxraven-py/issues/{issue})"
+underlines = ["", "", ""]
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "Features"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fix"
+name = "Bug Fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "docs"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "misc"
+name = "Miscellaneous"
+showcontent = true

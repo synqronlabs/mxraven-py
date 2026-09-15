@@ -1,0 +1,48 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.eggs/
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+tox/
+.nox/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Documentation build
+site/
+docs-html/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Release tooling
+.changeset/
+
+# Local environment
+.env
+.env.*
+
+# Temporary reference checkouts (mxraven-go, mxraven-js, raven). Never imported
+# from, depended on, or shipped.
+tmp/
