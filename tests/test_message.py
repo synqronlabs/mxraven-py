@@ -7,7 +7,7 @@ from email.parser import BytesParser
 
 import pytest
 
-from mxraven.message import Attachment, Message
+from mxraven.message import Attachment, DeliveryBy, DeliveryByMode, Envelope, Message
 
 pytestmark = pytest.mark.filterwarnings("error")
 
@@ -182,6 +182,44 @@ def test_header_injection_raises() -> None:
 def test_invalid_header_name_raises() -> None:
     with pytest.raises(ValueError, match="header name"):
         Message().from_("a@example.com").to("b@example.com").header("Bad Name", "x").build()
+
+
+def test_delivery_by_mode_wire_values() -> None:
+    assert DeliveryByMode.NOTIFY.value == "N"
+    assert DeliveryByMode.RETURN.value == "R"
+
+
+def test_delivery_by_defaults() -> None:
+    request = DeliveryBy(600)
+    assert request.seconds == 600
+    assert request.mode is DeliveryByMode.NOTIFY
+    assert request.trace is False
+
+
+def test_envelope_delivery_options_default_off() -> None:
+    envelope = Envelope()
+    assert envelope.require_tls is False
+    assert envelope.delivery_by is None
+
+
+def test_built_message_delivery_options_default_off() -> None:
+    built = Message().from_("a@example.com").to("b@example.com").build()
+    assert built.require_tls is False
+    assert built.delivery_by is None
+
+
+def test_builder_carries_require_tls_and_deliver_by() -> None:
+    request = DeliveryBy(600, DeliveryByMode.RETURN, trace=True)
+    built = (
+        Message()
+        .from_("a@example.com")
+        .to("b@example.com")
+        .require_tls()
+        .deliver_by(request)
+        .build()
+    )
+    assert built.require_tls is True
+    assert built.delivery_by == request
 
 
 def test_attachment_defaults() -> None:

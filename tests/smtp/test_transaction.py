@@ -7,7 +7,6 @@ import pytest
 from mxraven._internal.address import MailboxAddress
 from mxraven._internal.smtp.extensions import capabilities_from, parse_extensions
 from mxraven._internal.smtp.transaction import (
-    DeliveryBy,
     Recipient,
     RecipientDSN,
     Transaction,
@@ -18,6 +17,7 @@ from mxraven._internal.smtp.transaction import (
     extract_message_id,
 )
 from mxraven.errors import SMTPCapabilityError, SMTPError
+from mxraven.message import DeliveryBy, DeliveryByMode
 
 SENDER = MailboxAddress("sender", "example.com")
 RCPT = MailboxAddress("rcpt", "example.net")
@@ -77,7 +77,9 @@ def test_delivery_by_unsupported() -> None:
     with pytest.raises(SMTPCapabilityError):
         build_mail_from(
             caps(),
-            Transaction(sender=SENDER, recipients=(), delivery_by=DeliveryBy(600, "R")),
+            Transaction(
+                sender=SENDER, recipients=(), delivery_by=DeliveryBy(600, DeliveryByMode.RETURN)
+            ),
             is_tls=False,
         )
 
@@ -85,7 +87,9 @@ def test_delivery_by_unsupported() -> None:
 def test_delivery_by_ok() -> None:
     command = build_mail_from(
         caps("DELIVERBY 300"),
-        Transaction(sender=SENDER, recipients=(), delivery_by=DeliveryBy(600, "R")),
+        Transaction(
+            sender=SENDER, recipients=(), delivery_by=DeliveryBy(600, DeliveryByMode.RETURN)
+        ),
         is_tls=False,
     )
     assert command == "MAIL FROM:<sender@example.com> BY=600;R"
@@ -95,7 +99,9 @@ def test_delivery_by_below_minimum() -> None:
     with pytest.raises(ValueError, match="below server minimum"):
         build_mail_from(
             caps("DELIVERBY 300"),
-            Transaction(sender=SENDER, recipients=(), delivery_by=DeliveryBy(100, "R")),
+            Transaction(
+                sender=SENDER, recipients=(), delivery_by=DeliveryBy(100, DeliveryByMode.RETURN)
+            ),
             is_tls=False,
         )
 
@@ -103,7 +109,11 @@ def test_delivery_by_below_minimum() -> None:
 def test_delivery_by_trace() -> None:
     command = build_mail_from(
         caps("DELIVERBY 0"),
-        Transaction(sender=SENDER, recipients=(), delivery_by=DeliveryBy(0, "N", trace=True)),
+        Transaction(
+            sender=SENDER,
+            recipients=(),
+            delivery_by=DeliveryBy(0, DeliveryByMode.NOTIFY, trace=True),
+        ),
         is_tls=False,
     )
     assert command == "MAIL FROM:<sender@example.com> BY=0;NT"

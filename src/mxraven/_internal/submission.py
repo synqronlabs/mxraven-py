@@ -76,6 +76,8 @@ def transaction_from_built(built: BuiltMessage) -> Transaction:
         size=built.size,
         body_type=built.body_type,
         smtp_utf8=built.smtp_utf8,
+        require_tls=built.require_tls,
+        delivery_by=built.delivery_by,
     )
 
 
@@ -107,6 +109,8 @@ def transaction_from_envelope(envelope: Envelope, data: bytes | None) -> Transac
         size=size,
         body_type=body_type,
         smtp_utf8=smtp_utf8,
+        require_tls=envelope.require_tls,
+        delivery_by=envelope.delivery_by,
     )
 
 

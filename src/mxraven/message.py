@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import format_datetime, make_msgid
+from enum import StrEnum
 from typing import Self
 
 from mxraven._internal.address import (
@@ -31,7 +32,15 @@ from mxraven._internal.mime import (
     wrap_attachments,
 )
 
-__all__ = ["Attachment", "BuiltMessage", "Envelope", "Header", "Message"]
+__all__ = [
+    "Attachment",
+    "BuiltMessage",
+    "DeliveryBy",
+    "DeliveryByMode",
+    "Envelope",
+    "Header",
+    "Message",
+]
 
 _ASCII_LIMIT = 0x7F
 
@@ -72,6 +81,36 @@ class Attachment:
     content_id: str = ""
 
 
+class DeliveryByMode(StrEnum):
+    """How a server handles a message that misses its ``DELIVERBY`` deadline.
+
+    The values are the RFC 2852 wire values.
+    """
+
+    NOTIFY = "N"
+    """Request a delayed delivery notification (wire value ``N``)."""
+
+    RETURN = "R"
+    """Request that the message be returned to the sender (wire value ``R``)."""
+
+
+@dataclass(frozen=True, slots=True)
+class DeliveryBy:
+    """An RFC 2852 ``DELIVERBY`` request.
+
+    Attributes:
+        seconds: The delivery interval in seconds. It must be positive when
+            `mode` is `DeliveryByMode.RETURN`; ``0`` is allowed with
+            `DeliveryByMode.NOTIFY`.
+        mode: How the server handles a message that misses the deadline.
+        trace: Whether to request a trace of the delivery.
+    """
+
+    seconds: int
+    mode: DeliveryByMode = DeliveryByMode.NOTIFY
+    trace: bool = False
+
+
 @dataclass(frozen=True, slots=True)
 class Envelope:
     """The SMTP envelope for a raw message.
@@ -80,10 +119,17 @@ class Envelope:
         sender: The envelope sender. An empty value requests a null
             reverse-path, which is appropriate for bounce messages.
         recipients: At least one envelope recipient.
+        require_tls: Whether to request that TLS be used on every delivery hop
+            (RFC 8689). The session must already be encrypted and the service
+            must advertise ``REQUIRETLS``.
+        delivery_by: An RFC 2852 ``DELIVERBY`` request, when the service
+            advertises ``DELIVERBY``.
     """
 
     sender: str = ""
     recipients: tuple[str, ...] = ()
+    require_tls: bool = False
+    delivery_by: DeliveryBy | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +144,8 @@ class BuiltMessage:
         size: The serialized message size in bytes.
         body_type: ``8BITMIME`` when the body contains non-ASCII bytes,
             otherwise an empty string.
+        require_tls: Whether the message requests ``REQUIRETLS`` (RFC 8689).
+        delivery_by: The message's ``DELIVERBY`` request (RFC 2852), if any.
     """
 
     data: bytes
@@ -106,6 +154,8 @@ class BuiltMessage:
     smtp_utf8: bool
     size: int
     body_type: str = ""
+    require_tls: bool = False
+    delivery_by: DeliveryBy | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,6 +210,8 @@ class Message:
         self._in_reply_to = ""
         self._references: list[str] = []
         self._date: datetime | None = None
+        self._require_tls = False
+        self._delivery_by: DeliveryBy | None = None
 
     def from_(self, address: str) -> Self:
         """Set the envelope sender and the ``From`` header.
@@ -177,6 +229,25 @@ class Message:
         is still required for a valid message.
         """
         self._null_sender = True
+        return self
+
+    def require_tls(self) -> Self:
+        """Require TLS for every hop that handles the message (RFC 8689).
+
+        The session must already be encrypted and the submission service must
+        advertise ``REQUIRETLS``; otherwise sending raises
+        :class:`mxraven.SMTPError` before the message is transmitted.
+        """
+        self._require_tls = True
+        return self
+
+    def deliver_by(self, request: DeliveryBy) -> Self:
+        """Request delivery within a bounded window (RFC 2852).
+
+        The submission service must advertise ``DELIVERBY``, otherwise sending
+        raises :class:`mxraven.SMTPCapabilityError`.
+        """
+        self._delivery_by = request
         return self
 
     def sender(self, address: str) -> Self:
@@ -302,6 +373,8 @@ class Message:
             smtp_utf8=_needs_smtp_utf8(headers, addresses),
             size=len(data),
             body_type=body_type,
+            require_tls=self._require_tls,
+            delivery_by=self._delivery_by,
         )
 
     def _resolve_addresses(self) -> _Addresses:

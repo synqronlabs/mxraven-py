@@ -24,13 +24,22 @@ from mxraven.errors import (
     SMTPTransactionError,
     WebhookError,
 )
-from mxraven.message import Attachment, Envelope, Header, Message
+from mxraven.message import (
+    Attachment,
+    DeliveryBy,
+    DeliveryByMode,
+    Envelope,
+    Header,
+    Message,
+)
 from mxraven.result import RecipientResult, Result
 
 __all__ = [
     "DEFAULT_ADDRESS_PORT",
     "Attachment",
     "Client",
+    "DeliveryBy",
+    "DeliveryByMode",
     "Envelope",
     "FeedbackError",
     "Header",

@@ -26,9 +26,9 @@ from mxraven.errors import SMTPCapabilityError, SMTPError
 
 if TYPE_CHECKING:
     from mxraven._internal.smtp.extensions import Capabilities
+    from mxraven.message import DeliveryBy
 
 __all__ = [
-    "DeliveryBy",
     "Recipient",
     "RecipientDSN",
     "Transaction",
@@ -46,21 +46,6 @@ _BODY_BINARY = "BINARYMIME"
 _REQUIRETLS_ENHANCED = "5.7.30"
 _DOT = 0x2E
 _LINE_FEED = 0x0A
-
-
-@dataclass(frozen=True, slots=True)
-class DeliveryBy:
-    """The RFC 2852 ``DELIVERBY`` request.
-
-    Attributes:
-        seconds: The delivery interval in seconds.
-        mode: ``N`` to notify or ``R`` to return the message.
-        trace: Whether to request a trace of the delivery.
-    """
-
-    seconds: int
-    mode: str
-    trace: bool = False
 
 
 @dataclass(frozen=True, slots=True)

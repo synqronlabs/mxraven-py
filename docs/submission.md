@@ -32,6 +32,34 @@ message = (
 - `null_sender` uses a null reverse-path for bounce and auto-generated mail
   while keeping the `From` header.
 
+## Requiring TLS and bounding delivery time
+
+`Message.require_tls` requests that every hop delivering the message use TLS
+([RFC 8689](https://www.rfc-editor.org/rfc/rfc8689)). The session must already be
+encrypted and the service must advertise `REQUIRETLS`, otherwise `send` raises
+`SMTPError`.
+
+`Message.deliver_by` asks the service to deliver within a bounded window
+([RFC 2852](https://www.rfc-editor.org/rfc/rfc2852)). `DeliveryByMode.RETURN`
+asks for the message to be returned when the deadline passes;
+`DeliveryByMode.NOTIFY` asks for a delayed notification instead. The service
+must advertise `DELIVERBY`, otherwise `send` raises `SMTPCapabilityError`.
+
+```python
+from mxraven import DeliveryBy, DeliveryByMode
+
+message = (
+    Message()
+    .from_("noreply@acme.example")
+    .to("customer@example.com")
+    .require_tls()
+    .deliver_by(DeliveryBy(600, DeliveryByMode.RETURN))
+    .text("Time-sensitive notice.")
+)
+```
+
+Both options are also available on `Envelope` for `send_raw`.
+
 ## Sending raw messages
 
 Use `send_raw` to stream an already serialized RFC 5322 message with an explicit

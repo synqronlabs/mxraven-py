@@ -10,7 +10,7 @@ import pytest
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-from mxraven import Envelope, Message, SMTPTransactionError
+from mxraven import DeliveryBy, DeliveryByMode, Envelope, Message, SMTPTransactionError
 from mxraven.aio import Client
 from tests.fake_smtp import FakeSMTPConfig, FakeSMTPServer, running_server
 
@@ -98,3 +98,17 @@ def test_async_pool_reuses_connection() -> None:
     with running_server() as server:
         asyncio.run(run(server))
     assert server.connections == 1
+
+
+def test_async_deliver_by_sent_when_advertised() -> None:
+    extensions = ["PIPELINING", "8BITMIME", "AUTH PLAIN LOGIN", "DELIVERBY 300"]
+    config = FakeSMTPConfig(extensions=extensions)
+
+    async def run(server: FakeSMTPServer):
+        async with make_client(server) as client:
+            return await client.send(message().deliver_by(DeliveryBy(600, DeliveryByMode.RETURN)))
+
+    with running_server(config) as server:
+        result = asyncio.run(run(server))
+    assert result.recipients[0].accepted is True
+    assert "BY=600;R" in server.mail_from_lines[0]

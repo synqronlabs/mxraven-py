@@ -8,10 +8,42 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
+    import ssl
     from collections.abc import Iterator
 
-from mxraven import Client, Envelope, Message, SMTPConnectionError, SMTPTransactionError
-from tests.fake_smtp import FakeSMTPConfig, FakeSMTPServer, running_server
+from mxraven import (
+    Client,
+    DeliveryBy,
+    DeliveryByMode,
+    Envelope,
+    Message,
+    SMTPCapabilityError,
+    SMTPConnectionError,
+    SMTPError,
+    SMTPTransactionError,
+)
+from tests.fake_smtp import FakeSMTPConfig, FakeSMTPServer, make_tls_pair, running_server
+
+_BASE_EXTENSIONS = [
+    "PIPELINING",
+    "8BITMIME",
+    "SMTPUTF8",
+    "ENHANCEDSTATUSCODES",
+    "DSN",
+    "SIZE 10485760",
+]
+
+
+def tls_client_for(server: FakeSMTPServer, client_context: ssl.SSLContext) -> Client:
+    return Client(
+        "localhost",
+        port=server.port,
+        username="user",
+        secret="pass",
+        tls=client_context,
+        starttls=True,
+        require_tls=True,
+    )
 
 
 def client_for(server: FakeSMTPServer) -> Client:
@@ -189,3 +221,83 @@ def test_send_raw_streams_chunked_data() -> None:
         )
     assert result.recipients[0].accepted is True
     assert server.data_lines == ["Subject: Split", "", "..", "body ends with dot.", ".."]
+
+
+def test_deliver_by_sent_when_advertised() -> None:
+    extensions = [*_BASE_EXTENSIONS, "AUTH PLAIN LOGIN", "DELIVERBY 300"]
+    with (
+        running_server(FakeSMTPConfig(extensions=extensions)) as server,
+        client_for(server) as client,
+    ):
+        client.send(message().deliver_by(DeliveryBy(600, DeliveryByMode.RETURN)))
+    assert "BY=600;R" in server.mail_from_lines[0]
+
+
+def test_deliver_by_unsupported_raises() -> None:
+    with (
+        running_server() as server,
+        client_for(server) as client,
+        pytest.raises(SMTPCapabilityError),
+    ):
+        client.send(message().deliver_by(DeliveryBy(600, DeliveryByMode.RETURN)))
+
+
+def test_deliver_by_below_minimum_raises() -> None:
+    extensions = [*_BASE_EXTENSIONS, "AUTH PLAIN LOGIN", "DELIVERBY 300"]
+    with (
+        running_server(FakeSMTPConfig(extensions=extensions)) as server,
+        client_for(server) as client,
+        pytest.raises(ValueError, match="below server minimum"),
+    ):
+        client.send(message().deliver_by(DeliveryBy(100, DeliveryByMode.RETURN)))
+
+
+def test_send_raw_envelope_deliver_by() -> None:
+    extensions = [*_BASE_EXTENSIONS, "AUTH PLAIN LOGIN", "DELIVERBY 300"]
+    with (
+        running_server(FakeSMTPConfig(extensions=extensions)) as server,
+        client_for(server) as client,
+    ):
+        envelope = Envelope(
+            sender="sender@example.com",
+            recipients=("rcpt@example.net",),
+            delivery_by=DeliveryBy(600, DeliveryByMode.RETURN),
+        )
+        client.send_raw(envelope, b"Subject: Raw\r\n\r\nbody")
+    assert "BY=600;R" in server.mail_from_lines[0]
+
+
+def test_require_tls_requires_encrypted_session() -> None:
+    with (
+        running_server() as server,
+        client_for(server) as client,
+        pytest.raises(SMTPError) as info,
+    ):
+        client.send(message().require_tls())
+    assert info.value.enhanced_code == "5.7.30"
+
+
+def test_require_tls_requires_server_support() -> None:
+    server_context, client_context = make_tls_pair()
+    config = FakeSMTPConfig(
+        extensions=[*_BASE_EXTENSIONS, "AUTH PLAIN LOGIN", "STARTTLS"],
+        tls_context=server_context,
+    )
+    with (
+        running_server(config) as server,
+        tls_client_for(server, client_context) as client,
+        pytest.raises(SMTPError, match="support required"),
+    ):
+        client.send(message().require_tls())
+
+
+def test_require_tls_sent_over_starttls() -> None:
+    server_context, client_context = make_tls_pair()
+    config = FakeSMTPConfig(
+        extensions=[*_BASE_EXTENSIONS, "AUTH PLAIN LOGIN", "STARTTLS", "REQUIRETLS"],
+        tls_context=server_context,
+    )
+    with running_server(config) as server, tls_client_for(server, client_context) as client:
+        result = client.send(message().require_tls())
+    assert result.message_ref == "ref-1"
+    assert "REQUIRETLS" in server.mail_from_lines[0]
