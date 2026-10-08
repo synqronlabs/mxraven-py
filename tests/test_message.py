@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import quopri
 from datetime import UTC, datetime
 from email.parser import BytesParser
 
@@ -155,6 +156,32 @@ def test_smtp_utf8_for_non_ascii_header() -> None:
 def test_8bit_body_sets_body_type() -> None:
     built = Message().from_("a@example.com").to("b@example.com").text("héllo").build()
     assert built.body_type == "8BITMIME"
+
+
+def test_long_line_body_is_quoted_printable() -> None:
+    long_line = "z" * 1200
+    built = Message().from_("a@example.com").to("b@example.com").text(long_line).build()
+    message = parse(built.data)
+    assert message["Content-Transfer-Encoding"] == "quoted-printable"
+    assert built.body_type == ""
+    assert all(len(line) <= 998 for line in built.data.split(b"\r\n"))
+    body = built.data.split(b"\r\n\r\n", 1)[1]
+    assert quopri.decodestring(body).decode("utf-8") == f"{long_line}\r\n"
+
+
+def test_multipart_alternative_encodes_only_long_part() -> None:
+    built = (
+        Message()
+        .from_("a@example.com")
+        .to("b@example.com")
+        .text("short")
+        .html(f"<p>{'z' * 1200}</p>")
+        .build()
+    )
+    assert parse(built.data)["Content-Transfer-Encoding"] == "7bit"
+    body = built.data.split(b"\r\n\r\n", 1)[1]
+    assert b"Content-Transfer-Encoding: 7bit" in body
+    assert b"Content-Transfer-Encoding: quoted-printable" in body
 
 
 def test_missing_from_raises() -> None:

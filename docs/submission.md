@@ -31,6 +31,9 @@ message = (
 - `bcc` adds envelope recipients without a visible `Bcc` header.
 - `null_sender` uses a null reverse-path for bounce and auto-generated mail
   while keeping the `From` header.
+- Bodies whose lines would exceed the RFC 5322 limit of 998 octets are encoded
+  as `quoted-printable` automatically; otherwise ASCII bodies use `7bit` and
+  non-ASCII bodies use `8bit`.
 
 ## Requiring TLS and bounding delivery time
 

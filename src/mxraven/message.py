@@ -26,9 +26,8 @@ from mxraven._internal.address import (
 from mxraven._internal.headers import serialize_headers
 from mxraven._internal.mime import (
     build_alternative,
-    ensure_trailing_crlf,
+    encode_body,
     new_boundary,
-    normalize_line_endings,
     wrap_attachments,
 )
 
@@ -453,13 +452,11 @@ class Message:
                 self._text, self._html, boundary=new_boundary()
             )
         elif has_html:
-            body = ensure_trailing_crlf(normalize_line_endings(self._html))
+            body, encoding = encode_body(self._html)
             content_type = "text/html; charset=utf-8"
-            encoding = _encoding_for(self._html)
         elif has_text:
-            body = ensure_trailing_crlf(normalize_line_endings(self._text))
+            body, encoding = encode_body(self._text)
             content_type = "text/plain; charset=utf-8"
-            encoding = _encoding_for(self._text)
         else:
             body = ""
             content_type = "text/plain; charset=utf-8"
@@ -489,10 +486,6 @@ def _needs_smtp_utf8(headers: list[tuple[str, str]], addresses: _Addresses) -> b
         and (contains_non_ascii(address.local_part) or contains_non_ascii(address.domain))
         for address in candidates
     )
-
-
-def _encoding_for(text: str) -> str:
-    return "8bit" if contains_non_ascii(text) else "7bit"
 
 
 def _wrap_angle(value: str) -> str:
