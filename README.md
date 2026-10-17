@@ -5,6 +5,8 @@ A Python SDK for the mxRaven **mail-facing** runtime surfaces:
 - **SMTP submission** — the root package (`mxraven`).
 - **Webhook verification and decoding** — `mxraven.webhook`.
 - **Recipient feedback and RFC 8058 one-click unsubscribe** — `mxraven.feedback`.
+- **Client notification events over NATS JetStream** — `mxraven.notify` and
+  `mxraven.aio.notify`.
 
 It is the Python counterpart of the Go SDK at
 [`github.com/synqronlabs/mxraven-go/mail`](https://github.com/synqronlabs/mxraven-go/tree/main/mail)
@@ -21,7 +23,8 @@ separate control-plane SDK.
 ## Requirements
 
 Python 3.11 or later. The SDK has **zero runtime dependencies**; it uses only
-the standard library.
+the standard library. Client notifications are the one exception and need the
+optional `notify` extra.
 
 ## Install
 
@@ -29,6 +32,14 @@ the standard library.
 uv add mxraven
 # or
 pip install mxraven
+```
+
+For client notifications, install the extra:
+
+```sh
+uv add "mxraven[notify]"
+# or
+pip install "mxraven[notify]"
 ```
 
 ## Quick start
@@ -124,6 +135,30 @@ feedback = FeedbackClient(
 )
 feedback.learn_spam(raw_message_bytes)
 ```
+
+## Notifications
+
+Consume the durable mail events a listener publishes over NATS JetStream. This
+needs the `notify` extra and the same API key as SMTP submission.
+
+```python
+from mxraven.notify import NotificationClient, NotificationKind
+
+with NotificationClient.connect(
+    url="wss://nats.mxraven.com",
+    username="mxr_tx_ab12cd34ef56",
+    secret=os.environ["MXRAVEN_SECRET"],
+    listener=listener_id,
+) as client:
+    for delivery in client.events():
+        if delivery.event.kind is NotificationKind.ACCEPTED:
+            handle(delivery.event.accepted)
+        delivery.ack()
+```
+
+The asyncio counterpart is `mxraven.aio.notify`. See
+[Notifications](https://synqronlabs.github.io/mxraven-py/notifications/) for
+the full surface.
 
 ## Development
 

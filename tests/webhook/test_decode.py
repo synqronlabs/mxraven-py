@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from mxraven.errors import WebhookError
-from mxraven.webhook import EventType, StatusOutcome, decode
+from mxraven.webhook import EventType, StatusOutcome, TerminalAction, decode
 
 INBOUND = b"""{
     "event_type": "inbound_email",
@@ -62,6 +62,21 @@ def test_decode_delivery_status_fallback() -> None:
     assert event.delivery_status is not None
     assert event.delivery_status.status == StatusOutcome.DEFERRED
     assert event.delivery_status.smtp_code == 451
+
+
+def test_decode_delivery_status_includes_reason() -> None:
+    body = DELIVERY.replace(b'"smtp_code": 451', b'"smtp_code": 451, "reason": "smtp_transient"')
+    event = decode(body)
+    assert event.delivery_status is not None
+    assert event.delivery_status.reason == "smtp_transient"
+
+
+def test_status_outcome_includes_invalid() -> None:
+    assert StatusOutcome("invalid") is StatusOutcome.INVALID
+
+
+def test_terminal_action_includes_unspecified() -> None:
+    assert TerminalAction("TERMINAL_ACTION_TYPE_UNSPECIFIED") is TerminalAction.UNSPECIFIED
 
 
 def test_decode_storage_status() -> None:

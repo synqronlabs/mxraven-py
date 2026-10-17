@@ -14,9 +14,11 @@ if TYPE_CHECKING:
     from mxraven.result import Result
 
 __all__ = [
+    "DecodeError",
     "FeedbackError",
     "InvalidSignatureError",
     "MxRavenError",
+    "NotificationError",
     "SMTPCapabilityError",
     "SMTPConnectionError",
     "SMTPError",
@@ -147,3 +149,39 @@ class FeedbackError(MxRavenError):
     def retryable(self) -> bool:
         """Whether the request may succeed if retried later (429 or 5xx)."""
         return self.status_code == _TOO_MANY_REQUESTS or self.status_code >= _SERVER_ERROR_MIN
+
+
+class NotificationError(MxRavenError):
+    """A failure connecting to or consuming the client notification stream.
+
+    The underlying transport or JetStream failure is preserved as
+    :attr:`__cause__`. Most connection failures are transient and are retried
+    automatically; this error is only raised when an operation cannot continue.
+    """
+
+
+class DecodeError(NotificationError):
+    """A notification body that does not match the SDK's payload model.
+
+    This normally means the SDK is older than the server that produced the
+    event. The event is terminated rather than redelivered, because redelivery
+    can never succeed. When an error handler is configured, it receives the
+    error and consumption continues; otherwise consumption stops and this error
+    is raised.
+    """
+
+    def __init__(self, subject: str, message: str = "") -> None:
+        """Initialize the error.
+
+        Args:
+            subject: The notification subject the undecodable body was
+                published to.
+            message: A short description of the decode failure.
+        """
+        self.subject = subject
+        self.message = message
+        detail = message.strip()
+        text = f"notify: decode {subject!r}"
+        if detail:
+            text = f"{text}: {detail}"
+        super().__init__(text)

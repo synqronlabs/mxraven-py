@@ -45,7 +45,11 @@ class EventType(StrEnum):
 
 
 class StatusOutcome(StrEnum):
-    """The lifecycle state reported by a delivery status webhook."""
+    """The lifecycle state reported by a delivery status webhook.
+
+    The set is open on the wire: a status this SDK does not know is still
+    decoded and preserved as its raw string.
+    """
 
     ATTEMPTED = "attempted"
     DELIVERED = "delivered"
@@ -53,11 +57,13 @@ class StatusOutcome(StrEnum):
     FAILED = "failed"
     EXPIRED = "expired"
     SUPPRESSED = "suppressed"
+    INVALID = "invalid"
 
 
 class TerminalAction(StrEnum):
     """The final routing action recorded for an inbound message."""
 
+    UNSPECIFIED = "TERMINAL_ACTION_TYPE_UNSPECIFIED"
     DELIVER_DEDICATED = "TERMINAL_ACTION_TYPE_DELIVER_DEDICATED"
     SMARTHOST_RELAY = "TERMINAL_ACTION_TYPE_SMARTHOST_RELAY"
     DELIVER_WEBHOOK = "TERMINAL_ACTION_TYPE_DELIVER_WEBHOOK"
@@ -271,6 +277,7 @@ class DeliveryStatus:
     remote_host: str = ""
     smtp_code: int = 0
     enhanced_status_code: str = ""
+    reason: str = ""
     remote_response: str = ""
     next_retry_at_utc: int = 0
     correlation_task_id: str = ""

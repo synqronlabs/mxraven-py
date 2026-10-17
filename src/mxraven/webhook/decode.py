@@ -11,7 +11,7 @@ from mxraven.webhook import payload as _payload
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from mxraven.webhook.payload import Event
+    from mxraven.webhook.payload import Event, InboundEmail
 
 __all__ = ["decode"]
 
@@ -55,6 +55,23 @@ def decode(body: bytes) -> Event:
         return _payload.Event(_payload.EventType.DELIVERY_STATUS, delivery_status=_delivery(data))
     message = f"webhook: unrecognized payload: event_type {event_type!r}"
     raise WebhookError(message)
+
+
+def decode_inbound_email(data: Mapping[str, object]) -> InboundEmail:
+    """Decode the ``DELIVER_WEBHOOK`` inbound-email payload from a mapping.
+
+    Args:
+        data: An already-parsed JSON object.
+
+    Returns:
+        The decoded inbound email.
+
+    Note:
+        This is the shared inbound-email decoder used by webhook and client
+        notification decoding; it is not part of the :mod:`mxraven.webhook`
+        public surface.
+    """
+    return _inbound(data)
 
 
 def _inbound(data: Mapping[str, object]) -> _payload.InboundEmail:
@@ -157,6 +174,7 @@ def _delivery(data: Mapping[str, object]) -> _payload.DeliveryStatus:
         remote_host=_payload._str(data, "remote_host"),
         smtp_code=_payload._int(data, "smtp_code"),
         enhanced_status_code=_payload._str(data, "enhanced_status_code"),
+        reason=_payload._str(data, "reason"),
         remote_response=_payload._str(data, "remote_response"),
         next_retry_at_utc=_payload._int(data, "next_retry_at_utc"),
         correlation_task_id=_payload._str(data, "correlation_task_id"),

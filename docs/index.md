@@ -10,6 +10,8 @@ It covers three integration points:
   `NOTIFY_WEBHOOK` deliveries.
 - **Feedback** (`mxraven.feedback`) — train the spam filter and perform RFC 8058
   one-click unsubscribes.
+- **Notifications** (`mxraven.notify`) — consume a listener's accepted-message
+  and delivery-attempt events over NATS JetStream.
 
 Control-plane administration is out of scope and lives in the separate
 control-plane SDK.
@@ -25,6 +27,6 @@ uv add mxraven
 pip install mxraven
 ```
 
-See [SMTP submission](submission.md), [Webhooks](webhooks.md), and
-[Feedback](feedback.md) for usage, or the [API reference](reference/index.md)
-for the complete surface.
+See [SMTP submission](submission.md), [Webhooks](webhooks.md),
+[Feedback](feedback.md), and [Notifications](notifications.md) for usage, or the
+[API reference](reference/index.md) for the complete surface.

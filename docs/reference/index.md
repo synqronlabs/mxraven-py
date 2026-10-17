@@ -18,3 +18,11 @@ The reference is generated from the source with
 ## Feedback
 
 ::: mxraven.feedback
+
+## Notifications
+
+::: mxraven.notify
+
+## Asynchronous notifications
+
+::: mxraven.aio.notify

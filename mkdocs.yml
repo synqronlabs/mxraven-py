@@ -34,6 +34,7 @@ nav:
   - SMTP submission: submission.md
   - Webhooks: webhooks.md
   - Feedback: feedback.md
+  - Notifications: notifications.md
   - API reference: reference/index.md
 
 plugins:

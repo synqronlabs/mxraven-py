@@ -13,9 +13,11 @@ from importlib.metadata import PackageNotFoundError, version
 
 from mxraven.client import DEFAULT_ADDRESS_PORT, Client
 from mxraven.errors import (
+    DecodeError,
     FeedbackError,
     InvalidSignatureError,
     MxRavenError,
+    NotificationError,
     SMTPCapabilityError,
     SMTPConnectionError,
     SMTPError,
@@ -38,6 +40,7 @@ __all__ = [
     "DEFAULT_ADDRESS_PORT",
     "Attachment",
     "Client",
+    "DecodeError",
     "DeliveryBy",
     "DeliveryByMode",
     "Envelope",
@@ -46,6 +49,7 @@ __all__ = [
     "InvalidSignatureError",
     "Message",
     "MxRavenError",
+    "NotificationError",
     "RecipientResult",
     "Result",
     "SMTPCapabilityError",
