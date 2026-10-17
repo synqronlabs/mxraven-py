@@ -33,6 +33,7 @@ nav:
   - Home: index.md
   - SMTP submission: submission.md
   - Webhooks: webhooks.md
+  - MIME parsing: mime.md
   - Feedback: feedback.md
   - Notifications: notifications.md
   - API reference: reference/index.md

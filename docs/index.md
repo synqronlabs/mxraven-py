@@ -8,6 +8,8 @@ It covers three integration points:
   service.
 - **Webhooks** (`mxraven.webhook`) — verify and decode `DELIVER_WEBHOOK` and
   `NOTIFY_WEBHOOK` deliveries.
+- **MIME parsing** (`mxraven.mime`) — turn the raw message behind an
+  inbound-email payload into headers, bodies, and decoded attachments.
 - **Feedback** (`mxraven.feedback`) — train the spam filter and perform RFC 8058
   one-click unsubscribes.
 - **Notifications** (`mxraven.notify`) — consume a listener's accepted-message

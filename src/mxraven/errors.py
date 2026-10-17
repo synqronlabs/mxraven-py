@@ -17,6 +17,9 @@ __all__ = [
     "DecodeError",
     "FeedbackError",
     "InvalidSignatureError",
+    "MimeError",
+    "MimeNestingError",
+    "MimePartsError",
     "MxRavenError",
     "NotificationError",
     "SMTPCapabilityError",
@@ -185,3 +188,20 @@ class DecodeError(NotificationError):
         if detail:
             text = f"{text}: {detail}"
         super().__init__(text)
+
+
+class MimeError(MxRavenError):
+    """A MIME message cannot be parsed within the parser's limits.
+
+    Malformed message content never raises; the parser returns the best
+    interpretation it can. Only structurally unbounded input raises, so an
+    untrusted message cannot exhaust the stack or memory.
+    """
+
+
+class MimeNestingError(MimeError):
+    """MIME nesting exceeded the parser's maximum depth."""
+
+
+class MimePartsError(MimeError):
+    """A message contained more MIME entities than the parser allows."""

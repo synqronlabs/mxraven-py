@@ -4,6 +4,7 @@ A Python SDK for the mxRaven **mail-facing** runtime surfaces:
 
 - **SMTP submission** — the root package (`mxraven`).
 - **Webhook verification and decoding** — `mxraven.webhook`.
+- **Inbound MIME parsing** — `mxraven.mime` and `mxraven.aio.mime`.
 - **Recipient feedback and RFC 8058 one-click unsubscribe** — `mxraven.feedback`.
 - **Client notification events over NATS JetStream** — `mxraven.notify` and
   `mxraven.aio.notify`.
@@ -118,6 +119,23 @@ if event.type is event_type.inbound_email:
 The signature is HMAC-SHA256 over a canonical request string and is sent in the
 `X-MxRaven-*` headers. The signing secret is used as literal key bytes; do not
 base64-decode it.
+
+## Parsing inbound email
+
+Turn the raw message behind an inbound-email payload into headers, addresses,
+bodies, and decoded attachments.
+
+```python
+from mxraven.mime import fetch_and_parse_raw_email
+
+email = fetch_and_parse_raw_email(event.inbound_email.raw_email)
+print(email.subject, len(email.attachments))
+```
+
+`parse_email(raw_bytes)` parses bytes you already hold. The asyncio counterpart
+is `mxraven.aio.mime`. See
+[MIME parsing](https://synqronlabs.github.io/mxraven-py/mime/) for the full
+surface.
 
 ## Feedback
 

@@ -7,6 +7,7 @@ surfaces:
 
 - **SMTP submission** — the root package (`mxraven`).
 - **Webhook verification and decoding** — `mxraven.webhook`.
+- **Inbound MIME parsing** — `mxraven.mime` and `mxraven.aio.mime`.
 - **Recipient feedback and RFC 8058 one-click unsubscribe** — `mxraven.feedback`.
 - **Client notification events over NATS JetStream** — `mxraven.notify` and
   `mxraven.aio.notify`. The transport is the optional `notify` extra; the rest
@@ -350,8 +351,9 @@ justification and a discussion in the change description.
 - The version is derived from git tags by hatch-vcs; `0.1.0` is the fallback in
   a tree with no tags. Do not hard-code a version.
 - Public entry points are the root package and the `mxraven.webhook` /
-  `mxraven.feedback` / `mxraven.notify` (with `mxraven.aio.notify`) subpackages.
-  Adding a subpackage requires updating `mkdocs.yml` and the docs nav.
+  `mxraven.feedback` / `mxraven.notify` (with `mxraven.aio.notify`) / `mxraven.mime`
+  (with `mxraven.aio.mime`) subpackages. Adding a subpackage requires updating
+  `mkdocs.yml` and the docs nav.
 - Run `uv run check-wheel-contents dist/*.whl` and `uv run twine check dist/*`
   whenever packaging changes. Keep `py.typed` and `license-files` correct.
 - Keep `uv.lock` committed and in sync (`uv lock`, then `uv sync`).

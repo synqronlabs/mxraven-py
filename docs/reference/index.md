@@ -15,6 +15,10 @@ The reference is generated from the source with
 
 ::: mxraven.webhook
 
+## MIME parsing
+
+::: mxraven.mime
+
 ## Feedback
 
 ::: mxraven.feedback
@@ -26,3 +30,7 @@ The reference is generated from the source with
 ## Asynchronous notifications
 
 ::: mxraven.aio.notify
+
+## Asynchronous MIME parsing
+
+::: mxraven.aio.mime
