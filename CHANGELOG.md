@@ -9,6 +9,17 @@ Entries are assembled from the fragments in `changelog.d/` by
 
 <!-- towncrier release notes start -->
 
+## 0.5.0 - 2026-10-21
+
+### Features
+
+- Expose ``message_ref`` on notification and status payloads: ``InboundEmail``,
+  ``DeliveryStatus``, ``StorageStatus``, and the notify ``AttemptEvent``. It is the
+  value a submission reply reports as ``message_ref=``, so an event can be joined
+  to the send that produced it, including every recipient a single send fanned out
+  to. ([#1](https://github.com/synqronlabs/mxraven-py/issues/1))
+
+
 ## 0.4.0 - 2026-10-21
 
 ### Features
