@@ -30,6 +30,13 @@ Each event is one of two kinds:
   Every attempt carries a `correlation_id` pointing at the `task_id` of the
   accepted event for its message.
 
+Both kinds carry `message_ref`, the mxRaven message reference. For an outbound
+listener it is the value a submission reply reports as `message_ref=`, so it
+joins an event back to the send that produced it: `send()` returns the same value
+as `SendResult.message_ref`. It is the only identifier in an event the caller
+already holds, and it groups the attempts of a fan-out that otherwise have
+distinct task ids.
+
 ```python
 from mxraven.notify import NotificationEvent, NotificationKind
 ```

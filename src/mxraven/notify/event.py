@@ -108,6 +108,7 @@ class AttemptEvent:
     task_id: str = ""
     tenant_id: str = ""
     listener_id: str = ""
+    message_ref: str = ""
     correlation_id: str = ""
     attempt: int = 0
     accepted_at_utc: int = 0
@@ -222,6 +223,7 @@ def _attempt(subject: str, data: Mapping[str, object]) -> AttemptEvent:
         task_id=_str(subject, data, "task_id"),
         tenant_id=_str(subject, data, "tenant_id"),
         listener_id=_str(subject, data, "listener_id"),
+        message_ref=_str(subject, data, "message_ref"),
         correlation_id=_str(subject, data, "correlation_id"),
         attempt=_int(subject, data, "attempt"),
         accepted_at_utc=_int(subject, data, "accepted_at_utc"),

@@ -58,6 +58,7 @@ SMTP_ATTEMPT_BODY = json.dumps(
         "task_id": "task-1",
         "tenant_id": "tenant-1",
         "listener_id": "listener-1",
+        "message_ref": "message-ref-1",
         "correlation_id": "accepted-1",
         "status": "deferred",
         "attempt": 3,
@@ -82,6 +83,7 @@ S3_ATTEMPT_BODY = json.dumps(
         "task_id": "task-1",
         "tenant_id": "tenant-1",
         "listener_id": "listener-1",
+        "message_ref": "message-ref-1",
         "correlation_id": "accepted-1",
         "status": "delivered",
         "attempt": 2,
@@ -102,6 +104,7 @@ WEBHOOK_ATTEMPT_BODY = json.dumps(
         "task_id": "task-1",
         "tenant_id": "tenant-1",
         "listener_id": "listener-1",
+        "message_ref": "message-ref-1",
         "correlation_id": "accepted-1",
         "status": "invalid",
         "attempt": 1,
@@ -146,6 +149,7 @@ def test_decodes_attempt_channels(
     assert event.attempt.channel == channel
     assert event.attempt.status == status
     assert event.attempt.correlation_id == "accepted-1"
+    assert event.attempt.message_ref == "message-ref-1"
 
 
 def test_maps_every_smtp_attempt_field() -> None:
@@ -156,6 +160,7 @@ def test_maps_every_smtp_attempt_field() -> None:
     assert attempt.task_id == "task-1"
     assert attempt.tenant_id == "tenant-1"
     assert attempt.listener_id == "listener-1"
+    assert attempt.message_ref == "message-ref-1"
     assert attempt.correlation_id == "accepted-1"
     assert attempt.status == "deferred"
     assert attempt.attempt == 3

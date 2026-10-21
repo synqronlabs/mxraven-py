@@ -250,6 +250,7 @@ class InboundEmail:
     task_id: str = ""
     tenant_id: str = ""
     listener_id: str = ""
+    message_ref: str = ""
     attempt: int = 0
     accepted_at_utc: int = 0
     occurred_at_utc: int = 0
@@ -268,6 +269,7 @@ class DeliveryStatus:
     task_id: str = ""
     tenant_id: str = ""
     listener_id: str = ""
+    message_ref: str = ""
     status: str = ""
     attempt: int = 0
     accepted_at_utc: int = 0
@@ -291,6 +293,7 @@ class StorageStatus:
     task_id: str = ""
     tenant_id: str = ""
     listener_id: str = ""
+    message_ref: str = ""
     status: str = ""
     attempt: int = 0
     accepted_at_utc: int = 0

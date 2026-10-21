@@ -12,6 +12,7 @@ INBOUND = b"""{
     "task_id": "task-123",
     "tenant_id": "tenant-1",
     "listener_id": "listener-1",
+    "message_ref": "message-ref-1",
     "attempt": 1,
     "accepted_at_utc": 1789302600,
     "occurred_at_utc": 1789302601,
@@ -33,6 +34,7 @@ DELIVERY = b"""{
     "task_id": "task-9",
     "tenant_id": "tenant-1",
     "listener_id": "listener-1",
+    "message_ref": "message-ref-1",
     "status": "deferred",
     "attempt": 2,
     "smtp_code": 451
